@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ChargeView — Screen mockups</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0a0d0c;
+      --surface: #121715;
+      --surface-2: #19211d;
+      --line: #26312b;
+      --text: #f1f5f2;
+      --muted: #9ca9a1;
+      --green: #87edaa;
+      --green-dark: #245637;
+      --blue: #8dbdff;
+      --amber: #ffc875;
+      --red: #ff8b82;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 50% -10%, #1b2b21 0, var(--bg) 48rem);
+      color: var(--text);
+      font: 14px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .page { max-width: 1440px; margin: 0 auto; padding: 38px 30px 50px; }
+    .intro { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 28px; }
+    .eyebrow { color: var(--green); font-size: 11px; font-weight: 750; letter-spacing: .16em; text-transform: uppercase; }
+    h1 { margin: 8px 0 6px; font-size: clamp(28px, 4vw, 42px); letter-spacing: -.045em; line-height: 1.05; }
+    .intro p { color: var(--muted); margin: 0; max-width: 650px; }
+    .badge { border: 1px solid #355441; border-radius: 999px; color: #c4f3d2; padding: 9px 13px; white-space: nowrap; font-size: 12px; }
+    .screens { display: grid; grid-template-columns: repeat(4, minmax(240px, 1fr)); gap: 18px; align-items: start; }
+    .screen-wrap { min-width: 0; }
+    .screen-title { display: flex; justify-content: space-between; align-items: baseline; margin: 0 2px 9px; }
+    .screen-title h2 { font-size: 13px; letter-spacing: .04em; text-transform: uppercase; margin: 0; }
+    .screen-title span { color: var(--muted); font-size: 11px; }
+    .phone {
+      min-height: 700px;
+      overflow: hidden;
+      border: 1px solid #323d36;
+      border-radius: 27px;
+      background: #0e1210;
+      box-shadow: 0 20px 55px #0008, inset 0 1px #ffffff0c;
+      padding: 13px 13px 12px;
+    }
+    .status { display: flex; justify-content: space-between; padding: 0 4px 13px; color: #bbc5be; font-size: 10px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; margin: 0 1px 16px; }
+    .brand { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 760; letter-spacing: -.035em; }
+    .bolt { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 8px; background: #1b3a27; color: var(--green); font-size: 14px; }
+    .icon-button { width: 31px; height: 31px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; color: #c6d0c9; font-size: 14px; }
+    .section-kicker { color: var(--muted); text-transform: uppercase; font-size: 9px; letter-spacing: .12em; font-weight: 700; }
+    .state { display: flex; justify-content: space-between; align-items: center; margin: 0 2px 12px; }
+    .live { display: flex; align-items: center; gap: 6px; color: #bdebc9; font-size: 11px; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px #87edaa88; }
+    .hero {
+      padding: 16px 15px 14px;
+      border: 1px solid #2a4232;
+      border-radius: 20px;
+      background: linear-gradient(145deg, #1a2b20, #121a15 72%);
+      margin-bottom: 10px;
+    }
+    .hero-top { display: flex; justify-content: space-between; align-items: start; gap: 8px; }
+    .hero-label { color: #bdd0c3; font-size: 11px; }
+    .hero-value { margin: 5px 0 0; font-size: 31px; line-height: 1; font-weight: 730; letter-spacing: -.05em; }
+    .hero-value small { font-size: 14px; font-weight: 580; letter-spacing: 0; color: #c1d0c6; }
+    .tag { background: #25452e; color: #c6f2d2; border-radius: 999px; padding: 4px 7px; font-size: 9px; white-space: nowrap; }
+    .battery { height: 8px; margin: 17px 0 7px; border-radius: 9px; background: #34443a; overflow: hidden; }
+    .battery span { display: block; height: 100%; width: 74%; border-radius: inherit; background: linear-gradient(90deg, #54c77e, var(--green)); }
+    .bar-meta { display: flex; justify-content: space-between; color: #9eafa4; font-size: 9px; }
+    .eta { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #ffffff14; margin-top: 13px; padding-top: 11px; }
+    .eta strong { color: var(--green); font-size: 18px; letter-spacing: -.03em; }
+    .eta small { display: block; color: #a9b9ae; font-size: 9px; }
+    .mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 10px; }
+    .metric { background: var(--surface); border: 1px solid #252f29; border-radius: 16px; padding: 12px 12px 11px; min-height: 92px; }
+    .metric-head { display: flex; justify-content: space-between; align-items: center; color: #a9b5ad; font-size: 10px; }
+    .metric-icon { color: var(--green); font-size: 13px; }
+    .metric-value { margin-top: 8px; font-size: 21px; line-height: 1; font-weight: 680; letter-spacing: -.04em; }
+    .metric-value small { color: #a9b5ad; font-size: 10px; font-weight: 500; letter-spacing: 0; }
+    .metric-note { margin-top: 6px; color: #89978f; font-size: 9px; }
+    .temp .metric-icon { color: var(--amber); }
+    .panel { background: var(--surface); border: 1px solid #252f29; border-radius: 16px; padding: 12px; margin-bottom: 10px; }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .panel-head strong { font-size: 11px; font-weight: 650; }
+    .panel-head span { color: var(--muted); font-size: 9px; }
+    .chart { height: 105px; position: relative; overflow: hidden; }
+    .chart svg { width: 100%; height: 100%; overflow: visible; }
+    .chart-grid { stroke: #344139; stroke-width: 1; stroke-dasharray: 3 4; }
+    .charge-line { fill: none; stroke: var(--green); stroke-width: 2.5; stroke-linecap: round; }
+    .discharge-line { fill: none; stroke: var(--amber); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 5 3; }
+    .zero-line { stroke: #e7efe999; stroke-width: 1.5; }
+    .soc-line { fill: none; stroke: var(--blue); stroke-width: 2; stroke-linecap: round; }
+    .chart-labels { display: flex; justify-content: space-between; color: #7f8c83; font-size: 8px; margin-top: -1px; }
+    .legend { display: flex; gap: 11px; color: #aebbb3; font-size: 9px; margin-top: 7px; }
+    .legend i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--green); margin-right: 4px; }
+    .legend .blue { background: var(--blue); }
+    .legend .amber { background: var(--amber); }
+    .session-strip { display: flex; justify-content: space-between; align-items: center; background: #111815; border: 1px solid #27332c; border-radius: 14px; padding: 10px 12px; }
+    .session-strip strong { display: block; font-size: 10px; }
+    .session-strip small { color: var(--muted); font-size: 9px; }
+    .recording { color: var(--green); font-size: 9px; }
+    .nav { display: grid; grid-template-columns: repeat(4, 1fr); margin: 14px -2px 0; padding-top: 9px; border-top: 1px solid #232d27; }
+    .nav-item { color: #7f8c83; text-align: center; font-size: 8px; }
+    .nav-item b { display: block; font-size: 15px; font-weight: 500; margin-bottom: 3px; }
+    .nav-item.active { color: var(--green); }
+    .detail-hero { text-align: center; padding: 14px 12px 12px; border-radius: 18px; background: linear-gradient(145deg, #1a2b20, #111714); border: 1px solid #2a4232; margin-bottom: 10px; }
+    .detail-hero .hero-value { font-size: 38px; margin-top: 8px; }
+    .detail-hero .caption { color: #aab9af; font-size: 10px; margin-top: 6px; }
+    .range { margin: 15px 2px 5px; height: 7px; border-radius: 9px; background: #34443a; position: relative; }
+    .range span { display: block; height: 100%; width: 74%; background: var(--green); border-radius: 9px; }
+    .range:after { content: ""; position: absolute; left: 74%; top: -3px; width: 3px; height: 13px; background: #fff; border-radius: 3px; }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; margin-bottom: 10px; }
+    .stat { background: var(--surface); border: 1px solid #252f29; border-radius: 13px; padding: 10px 8px; text-align: center; }
+    .stat strong { display: block; font-size: 14px; }
+    .stat small { color: var(--muted); font-size: 8px; }
+    .data-note { display: flex; gap: 8px; background: #151c18; border: 1px solid #2a352e; border-radius: 13px; padding: 10px; color: #aebbb3; font-size: 9px; }
+    .data-note b { display: block; color: #d7e2da; font-size: 10px; margin-bottom: 2px; }
+    .note-icon { color: var(--blue); font-size: 14px; }
+    .session-row { display: flex; align-items: center; gap: 10px; padding: 11px 1px; border-bottom: 1px solid #26312b; }
+    .session-row:last-child { border-bottom: 0; padding-bottom: 2px; }
+    .session-date { display: grid; place-items: center; width: 37px; height: 39px; flex: 0 0 auto; border-radius: 11px; background: #1d2a22; color: var(--green); font-weight: 700; font-size: 12px; }
+    .session-info { min-width: 0; flex: 1; }
+    .session-info strong { display: block; font-size: 10px; }
+    .session-info small { display: block; color: var(--muted); font-size: 9px; margin-top: 2px; }
+    .session-end { text-align: right; white-space: nowrap; }
+    .session-end strong { display: block; font-size: 10px; }
+    .session-end small { color: var(--green); font-size: 9px; }
+    .filter-row { display: flex; gap: 6px; margin: 0 0 11px; }
+    .filter { border: 1px solid #303b34; border-radius: 999px; color: #aab8af; padding: 5px 9px; font-size: 9px; }
+    .filter.selected { border-color: #4a855c; background: #1b3222; color: #c7f2d3; }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 0; border-bottom: 1px solid #26312b; }
+    .toggle-row:last-child { border-bottom: 0; }
+    .toggle-copy strong { display: block; font-size: 10px; font-weight: 610; }
+    .toggle-copy small { display: block; color: var(--muted); font-size: 8px; margin-top: 3px; max-width: 170px; }
+    .switch { width: 34px; height: 19px; border-radius: 99px; background: #415047; padding: 2px; flex: 0 0 auto; }
+    .switch:after { content: ""; display: block; height: 15px; width: 15px; border-radius: 50%; background: #d2dbd5; }
+    .switch.on { background: #3e9b5c; }
+    .switch.on:after { margin-left: 15px; background: white; }
+    .segmented { display: flex; background: #0c100e; border: 1px solid #29342d; border-radius: 10px; padding: 3px; gap: 2px; }
+    .segmented span { flex: 1; text-align: center; padding: 5px 2px; border-radius: 7px; color: #99a79e; font-size: 8px; }
+    .segmented .chosen { color: #d8f2df; background: #264631; }
+    .setting-control { margin-top: 8px; }
+    .target-box { display: flex; align-items: center; justify-content: space-between; border: 1px solid #303c34; background: #0e1310; border-radius: 10px; padding: 8px 10px; color: #e5ece7; font-size: 10px; }
+    .target-box span:last-child { color: var(--green); font-weight: 700; }
+    .device-note { border-radius: 12px; background: #151b17; border: 1px solid #29352d; padding: 10px; margin-top: 8px; font-size: 9px; color: #aab8af; }
+    .device-note strong { color: #dce8df; }
+    .mock-note { color: #9aa89f; font-size: 10px; margin: 9px 2px 0; }
+    .fold-callout { margin-top: 24px; border: 1px solid #2c3d32; border-radius: 18px; padding: 16px 18px; display: flex; justify-content: space-between; align-items: center; gap: 20px; background: #111713cc; }
+    .fold-callout strong { display: block; font-size: 13px; margin-bottom: 3px; }
+    .fold-callout p { margin: 0; color: var(--muted); font-size: 11px; }
+    .fold-tag { color: #c7efd2; font-size: 10px; border: 1px solid #355441; border-radius: 999px; padding: 7px 10px; white-space: nowrap; }
+    .phone { height: 710px; min-height: 0; display: flex; flex-direction: column; }
+    .status { padding-bottom: 7px; flex: 0 0 auto; }
+    .topbar { margin-bottom: 8px; flex: 0 0 auto; }
+    .state { margin-bottom: 7px; flex: 0 0 auto; }
+    .hero { padding: 11px 12px 10px; margin-bottom: 7px; }
+    .battery { margin: 11px 0 6px; height: 7px; }
+    .eta { margin-top: 8px; padding-top: 8px; }
+    .mini-grid { gap: 6px; margin-bottom: 7px; flex: 0 0 auto; }
+    .metric { padding: 8px 9px 7px; min-height: 74px; border-radius: 14px; }
+    .metric-value { margin-top: 6px; font-size: 19px; }
+    .metric-value small { font-size: 9px; }
+    .metric-note { margin-top: 4px; font-size: 8px; }
+    .panel { padding: 9px; margin-bottom: 7px; border-radius: 15px; }
+    .panel-head { margin-bottom: 5px; }
+    .chart { height: 72px; }
+    .legend { margin-top: 4px; }
+    .session-strip { padding: 7px 9px; flex: 0 0 auto; }
+    .nav { margin: auto -2px 0; padding-top: 6px; flex: 0 0 auto; }
+    .detail-hero { padding: 9px 12px 8px; margin-bottom: 7px; }
+    .detail-hero .hero-value { margin-top: 5px; }
+    .detail-hero .caption { margin-top: 4px; }
+    .range { margin-top: 8px; }
+    .stats-grid { gap: 5px; margin-bottom: 5px; flex: 0 0 auto; }
+    .stat { padding: 6px 5px; }
+    .data-note { padding: 6px; font-size: 8px; }
+    .session-row { gap: 7px; padding: 6px 1px; }
+    .session-date { width: 32px; height: 32px; font-size: 9px; }
+    .filter-row { margin-bottom: 7px; }
+    .toggle-row { padding: 8px 0; }
+    .device-note { padding: 8px; margin-top: 6px; }
+    .screen-wrap:first-child .chart { height: 62px; }
+    .screen-wrap:first-child .panel { padding: 8px; margin-bottom: 5px; }
+    .axis-graph { display: grid; grid-template-columns: 21px minmax(0, 1fr); gap: 4px; align-items: stretch; }
+    .axis-graph.dual { grid-template-columns: 22px minmax(0, 1fr) 23px; gap: 3px; }
+    .y-axis { display: flex; flex-direction: column; justify-content: space-between; color: #aab8af; font-size: 8px; line-height: 1; padding: 3px 0; }
+    .y-axis.left { text-align: right; }
+    .y-axis.right { text-align: left; }
+    .y-axis .axis-unit { font-weight: 700; color: var(--green); }
+    .y-axis.right .axis-unit { color: var(--blue); }
+    .plot { min-width: 0; position: relative; }
+    .cursor { position: absolute; top: 6px; bottom: 5px; left: 69%; width: 1px; background: #e9f1eb99; }
+    .cursor-dot { position: absolute; left: calc(69% - 4px); top: 38%; width: 8px; height: 8px; border: 2px solid #0c1210; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 1px var(--green); }
+    .tooltip { position: absolute; top: 2px; left: 37%; z-index: 1; border: 1px solid #405347; border-radius: 7px; padding: 4px 6px; background: #202c24ed; color: #eff7f1; font-size: 8px; white-space: nowrap; }
+    .touch-hint { margin-top: 4px; color: #9eada3; font-size: 8px; }
+    @media (max-width: 1100px) { .screens { grid-template-columns: repeat(2, minmax(250px, 1fr)); } }
+    @media (max-width: 620px) { .page { padding: 25px 15px 32px; } .intro { display: block; } .badge { display: inline-block; margin-top: 14px; } .screens { grid-template-columns: minmax(0, 1fr); max-width: 390px; margin: auto; } .fold-callout { align-items: start; flex-direction: column; gap: 10px; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="intro">
+      <div>
+        <div class="eyebrow">Product concept · Fold7</div>
+        <h1>ChargeView</h1>
+        <p>A quick-glance charging companion: the essentials up front, detailed session data one tap away. Example readings below are illustrative.</p>
+      </div>
+      <div class="badge">Dark mode · sample data</div>
+    </header>
+
+    <section class="screens" aria-label="ChargeView screen mockups">
+      <article class="screen-wrap">
+        <div class="screen-title"><h2>01 · Dashboard</h2><span>At a glance</span></div>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span>◉ 5G　 ▰ 82%</span></div>
+          <div class="topbar"><div class="brand"><span class="bolt">ϟ</span>ChargeView</div><div class="icon-button">⋯</div></div>
+          <div class="state"><span class="section-kicker">Live charging</span><span class="live"><i class="dot"></i> Updated now</span></div>
+          <section class="hero">
+            <div class="hero-top"><div><div class="hero-label">Battery charge</div><div class="hero-value">74<small>%</small></div></div><span class="tag">Charging</span></div>
+            <div class="battery"><span></span></div><div class="bar-meta"><span>Battery level</span><span>Target 80%</span></div>
+            <div class="eta"><div><strong>~32 min</strong><small>Until target · estimate</small></div><span class="tag">Taper-aware</span></div>
+          </section>
+          <div class="mini-grid">
+            <div class="metric"><div class="metric-head"><span>Battery power</span><span class="metric-icon">ϟ</span></div><div class="metric-value">18.6 <small>W</small></div><div class="metric-note">+ charge · − discharge</div></div>
+            <div class="metric"><div class="metric-head"><span>SoC change</span><span class="metric-icon">↗</span></div><div class="metric-value">+4.2 <small>% / 10 min</small></div><div class="metric-note">Negative on discharge</div></div>
+            <div class="metric temp"><div class="metric-head"><span>Temperature</span><span class="metric-icon">◉</span></div><div class="metric-value">34.2 <small>°C</small></div><div class="metric-note">Battery temperature</div></div>
+            <div class="metric"><div class="metric-head"><span>Last minute</span><span class="metric-icon">◷</span></div><div class="metric-value">+0.5 <small>%</small></div><div class="metric-note">SoC change · 60 seconds</div></div>
+          </div>
+          <section class="panel">
+            <div class="panel-head"><strong>Battery power</strong><span>Session　›</span></div>
+            <div class="axis-graph">
+              <div class="y-axis left"><span>+20</span><span>0 W</span><span>−10</span></div>
+              <div class="plot">
+                <div class="tooltip">Earlier · −4.2 W · Discharging</div><div class="cursor"></div><div class="cursor-dot" style="background:var(--amber);box-shadow:0 0 0 1px var(--amber)"></div>
+                <div class="chart">
+                  <svg viewBox="0 0 280 100" preserveAspectRatio="none" aria-label="Battery power over time crossing from positive charging to negative discharging">
+                    <path class="chart-grid" d="M0 20H280M0 50H280M0 80H280"></path>
+                    <path class="zero-line" d="M0 50H280"></path>
+                    <path class="charge-line" d="M2 22 C26 24 34 34 56 39 S96 43 120 46 S151 49 165 50"></path>
+                    <path class="discharge-line" d="M165 50 C184 53 197 60 216 66 S254 76 278 82"></path>
+                  </svg>
+                </div>
+                <div class="chart-labels"><span>1s</span><span>10m</span><span>30m</span></div>
+              </div>
+            </div>
+            <div class="legend"><span><i></i>Charging (+)</span><span><i class="amber"></i>Discharging (−)</span></div>
+            <div class="touch-hint">Zero baseline shown · touch graph to inspect</div>
+          </section>
+          <div class="session-strip"><div><strong>Session recording</strong><small>18 min · In background</small></div><span class="recording">● Active</span></div>
+          <nav class="nav"><div class="nav-item active"><b>⌂</b>Home</div><div class="nav-item"><b>◷</b>History</div><div class="nav-item"><b>⌁</b>Diagnostics</div><div class="nav-item"><b>⚙</b>Settings</div></nav>
+        </div>
+        <p class="mock-note">Discharging flips readings negative, changes status, and hides charging ETA.</p>
+      </article>
+
+      <article class="screen-wrap">
+        <div class="screen-title"><h2>02 · Session detail</h2><span>Live or saved</span></div>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span>◉ 5G　 ▰ 82%</span></div>
+          <div class="topbar"><div class="brand"><span class="icon-button">‹</span> Session details</div><div class="icon-button">↗</div></div>
+          <div class="state"><span class="section-kicker">Today · 9:23 AM</span><span class="live"><i class="dot"></i> Recording</span></div>
+          <section class="detail-hero">
+            <div class="section-kicker">Battery charge</div><div class="hero-value">74<small>%</small></div>
+            <div class="caption">Charging · 18 minutes elapsed</div>
+            <div class="range"><span></span></div><div class="bar-meta"><span>56% start</span><span>80% target</span></div>
+          </section>
+          <div class="mini-grid">
+            <div class="metric"><div class="metric-head"><span>Time to target</span><span class="metric-icon">◷</span></div><div class="metric-value">~32 <small>min</small></div><div class="metric-note">Taper-aware estimate</div></div>
+            <div class="metric"><div class="metric-head"><span>Last minute</span><span class="metric-icon">◷</span></div><div class="metric-value">+0.5 <small>%</small></div><div class="metric-note">SoC change · 60 sec</div></div>
+          </div>
+          <section class="panel">
+            <div class="panel-head"><strong>Session graph</strong><span>Linear　⌄</span></div>
+            <div class="axis-graph dual">
+              <div class="y-axis left"><span>+20</span><span>0 <b>W</b></span><span>−10</span></div>
+              <div class="plot">
+                <div class="tooltip">Earlier · −4.2 W · 72%</div><div class="cursor"></div><div class="cursor-dot" style="background:var(--amber);box-shadow:0 0 0 1px var(--amber)"></div>
+                <div class="chart" style="height:100px">
+                  <svg viewBox="0 0 280 100" preserveAspectRatio="none" aria-label="Session graph with labelled axes and selected point">
+                    <path class="chart-grid" d="M0 18H280M0 50H280M0 82H280"></path>
+                    <path class="zero-line" d="M0 50H280"></path>
+                    <path class="charge-line" d="M4 24 C34 26 48 31 75 37 S119 42 150 46 S170 49 184 50"></path>
+                    <path class="discharge-line" d="M184 50 C202 53 213 60 225 66 S257 76 278 82"></path>
+                    <path class="soc-line" d="M4 36 C43 38 72 41 104 44 S161 50 193 56 S246 64 278 69"></path>
+                  </svg>
+                </div>
+                <div class="chart-labels"><span>1s</span><span>1m</span><span>10m</span><span>18m</span></div>
+              </div>
+              <div class="y-axis right"><span>100</span><span>75</span><span>50 <b>%</b></span></div>
+            </div>
+            <div class="legend"><span><i></i>Charging (+)</span><span><i class="amber"></i>Discharging (−)</span><span><i class="blue"></i>SoC</span></div>
+            <div class="touch-hint">Touch or drag to inspect values</div>
+          </section>
+          <div class="stats-grid"><div class="stat"><strong>18.6 W</strong><small>Avg power</small></div><div class="stat"><strong>34.2°</strong><small>Peak temp</small></div><div class="stat"><strong>+18%</strong><small>SoC change</small></div></div>
+          <div class="data-note"><span class="note-icon">ⓘ</span><div><b>About this estimate</b>ETA adjusts for recent charging behavior and may change as charging slows near your target.</div></div>
+          <nav class="nav"><div class="nav-item"><b>⌂</b>Home</div><div class="nav-item active"><b>◷</b>History</div><div class="nav-item"><b>⌁</b>Diagnostics</div><div class="nav-item"><b>⚙</b>Settings</div></nav>
+        </div>
+        <p class="mock-note">Axes show units and values; touch the chart to inspect a point.</p>
+      </article>
+
+      <article class="screen-wrap">
+        <div class="screen-title"><h2>03 · History</h2><span>Local records</span></div>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span>◉ 5G　 ▰ 82%</span></div>
+          <div class="topbar"><div class="brand">History</div><div class="icon-button">⌕</div></div>
+          <div class="section-kicker" style="margin:0 2px 8px">Your battery timeline</div>
+          <div class="filter-row"><span class="filter selected">Sessions</span><span class="filter">Device history</span></div>
+          <section class="panel">
+            <div class="panel-head"><strong>Today · October 20</strong><span>‹　1 of 3　›</span></div>
+            <div class="session-row"><div class="session-date">9:23</div><div class="session-info"><strong>Morning top-up</strong><small>18 min · ChargeView</small></div><div class="session-end"><strong>56 → 74%</strong><small>Charging</small></div></div>
+            <div class="session-row"><div class="session-date">7:10</div><div class="session-info"><strong>Battery use</strong><small>28 min · ChargeView</small></div><div class="session-end"><strong>74 → 72%</strong><small>−2% · Discharging</small></div></div>
+            <div class="touch-hint">Choose a date page to see more sessions</div>
+          </section>
+          <section class="panel" style="border-color:#344335">
+            <div class="panel-head"><strong>Phone battery history</strong><span>↻ Refresh</span></div>
+            <div class="data-note"><span class="note-icon">ⓘ</span><div><b>Device-provided data</b>Available history is separate from ChargeView recordings. Coverage can vary.</div></div>
+          </section>
+          <div class="session-strip"><div><strong>5 sessions recorded</strong><small>Stored privately on this device</small></div><span style="color:var(--green);font-size:10px">Export CSV　›</span></div>
+          <nav class="nav"><div class="nav-item"><b>⌂</b>Home</div><div class="nav-item active"><b>◷</b>History</div><div class="nav-item"><b>⌁</b>Diagnostics</div><div class="nav-item"><b>⚙</b>Settings</div></nav>
+        </div>
+        <p class="mock-note">ChargeView records and phone-provided history are visibly separated.</p>
+      </article>
+
+      <article class="screen-wrap">
+        <div class="screen-title"><h2>04 · Settings</h2><span>Quietly powerful</span></div>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span>◉ 5G　 ▰ 82%</span></div>
+          <div class="topbar"><div class="brand">Settings</div><div class="icon-button">⚙</div></div>
+          <div class="section-kicker" style="margin:0 2px 9px">Charging</div>
+          <section class="panel">
+            <div class="toggle-row"><div class="toggle-copy"><strong>Automatic session recording</strong><small>Start a session when charging begins</small></div><span class="switch on"></span></div>
+            <div class="toggle-row"><div class="toggle-copy"><strong>Record in background</strong><small>Keep capturing SoC while closed; Android limits may apply</small></div><span class="switch on"></span></div>
+            <div class="toggle-row"><div class="toggle-copy"><strong>Show recording notification</strong><small>Quickly see or stop an active recording</small></div><span class="switch on"></span></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head"><strong>Charge target</strong><span>For ETA</span></div>
+            <div class="toggle-copy"><small>Use the device limit when available</small></div>
+            <div class="setting-control"><div class="target-box"><span>Default target</span><span>80%　⌄</span></div></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head"><strong>Appearance</strong><span>Saved on this device</span></div>
+            <div class="segmented"><span>Light</span><span class="chosen">Dark</span><span>System</span></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head"><strong>Graph time scale</strong><span>Default view</span></div>
+            <div class="segmented"><span class="chosen">Linear</span><span>Logarithmic</span></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head"><strong>Sampling interval</strong><span>Battery reads may update more slowly</span></div>
+            <div class="segmented"><span>1 sec</span><span class="chosen">2 sec</span><span>5 sec</span><span>10 sec</span></div>
+          </section>
+          <nav class="nav"><div class="nav-item"><b>⌂</b>Home</div><div class="nav-item"><b>◷</b>History</div><div class="nav-item"><b>⌁</b>Diagnostics</div><div class="nav-item active"><b>⚙</b>Settings</div></nav>
+        </div>
+        <p class="mock-note">Optional controls are grouped by task, not exposed all at once.</p>
+      </article>
+
+      <article class="screen-wrap">
+        <div class="screen-title"><h2>05 · Dashboard · discharging</h2><span>On battery</span></div>
+        <div class="phone">
+          <div class="status"><span>14:05</span><span>◉ 5G　 ▰ 61%</span></div>
+          <div class="topbar"><div class="brand"><span class="bolt" style="color:var(--amber);background:#3a2f1b">ϟ</span>ChargeView</div><div class="icon-button">⋯</div></div>
+          <div class="state"><span class="section-kicker">On battery</span><span class="live"><i class="dot"></i> Updated now</span></div>
+          <section class="hero" style="border-color:#4a3d24;background:linear-gradient(145deg,#2b2519,#171410 72%)">
+            <div class="hero-top"><div><div class="hero-label">Battery charge</div><div class="hero-value">61<small>%</small></div></div><span class="tag" style="background:#4a3d24;color:#ffe0ae">Discharging</span></div>
+            <div class="battery"><span style="width:61%;background:linear-gradient(90deg,#d99a3a,var(--amber))"></span></div><div class="bar-meta"><span>Battery level</span><span>Empty at 0%</span></div>
+            <div class="eta"><div><strong style="color:var(--amber)">~6 h 10 min left</strong><small>Until empty · estimate, assumes recent use</small></div><span class="tag" style="background:#4a3d24;color:#ffe0ae">Medium confidence</span></div>
+          </section>
+          <div class="mini-grid">
+            <div class="metric"><div class="metric-head"><span>Battery power</span><span class="metric-icon" style="color:var(--amber)">ϟ</span></div><div class="metric-value">−2.8 <small>W</small></div><div class="metric-note">Discharging</div></div>
+            <div class="metric"><div class="metric-head"><span>SoC change</span><span class="metric-icon" style="color:var(--amber)">↘</span></div><div class="metric-value">−1.6 <small>% / 10 min</small></div><div class="metric-note">Rolling 10 minutes</div></div>
+            <div class="metric temp"><div class="metric-head"><span>Temperature</span><span class="metric-icon">◉</span></div><div class="metric-value">29.8 <small>°C</small></div><div class="metric-note">Battery temperature</div></div>
+            <div class="metric"><div class="metric-head"><span>Last minute</span><span class="metric-icon" style="color:var(--amber)">◷</span></div><div class="metric-value">−0.2 <small>%</small></div><div class="metric-note">SoC change · 60 seconds</div></div>
+          </div>
+          <section class="panel">
+            <div class="panel-head"><strong>Battery power</strong><span>Session　›</span></div>
+            <div class="axis-graph">
+              <div class="y-axis left"><span>+20</span><span>0 W</span><span>−10</span></div>
+              <div class="plot">
+                <div class="tooltip">Now · −2.8 W · Discharging</div><div class="cursor" style="left:92%"></div><div class="cursor-dot" style="left:calc(92% - 4px);top:55%;background:var(--amber);box-shadow:0 0 0 1px var(--amber)"></div>
+                <div class="chart">
+                  <svg viewBox="0 0 280 100" preserveAspectRatio="none" aria-label="Battery power while discharging, below the zero baseline">
+                    <path class="chart-grid" d="M0 20H280M0 50H280M0 80H280"></path>
+                    <path class="zero-line" d="M0 50H280"></path>
+                    <path class="discharge-line" d="M2 58 C40 62 70 55 100 60 S160 66 200 58 S250 56 278 57"></path>
+                  </svg>
+                </div>
+                <div class="chart-labels"><span>−30m</span><span>−10m</span><span>Now</span></div>
+              </div>
+            </div>
+            <div class="legend"><span><i class="amber"></i>Discharging (−)</span></div>
+            <div class="touch-hint">Touch graph to inspect</div>
+          </section>
+          <nav class="nav"><div class="nav-item active"><b>⌂</b>Home</div><div class="nav-item"><b>◷</b>History</div><div class="nav-item"><b>⌁</b>Diagnostics</div><div class="nav-item"><b>⚙</b>Settings</div></nav>
+        </div>
+        <p class="mock-note">While discharging, the headline shows estimated time until empty.</p>
+      </article>
+    </section>
+
+    <aside class="fold-callout">
+      <div><strong>Designed to move with the Fold</strong><p>Every primary screen is arranged to fit the current window without vertical scrolling. Unfolding gives the same running app more room—without restarting or losing the current screen, session, or graph state.</p></div>
+      <span class="fold-tag">Cover → unfolded · in place</span>
+    </aside>
+  </main>
+</body>
+</html>
