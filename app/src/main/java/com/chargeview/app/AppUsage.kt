@@ -21,7 +21,13 @@ data class SystemLoad(
 object AppUsage {
     fun hasAccess(ctx: Context): Boolean {
         val ops = ctx.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-        val mode = ops.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), ctx.packageName)
+        // unsafeCheckOpNoThrow only exists from API 29; minSdk is 26.
+        val mode = if (Build.VERSION.SDK_INT >= 29) {
+            ops.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), ctx.packageName)
+        } else {
+            @Suppress("DEPRECATION")
+            ops.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), ctx.packageName)
+        }
         return mode == AppOpsManager.MODE_ALLOWED
     }
 
@@ -33,7 +39,8 @@ object AppUsage {
     fun top(ctx: Context, windowMs: Long, limit: Int = 5): List<AppUse> {
         val usm = ctx.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val now = System.currentTimeMillis()
-        val stats = usm.queryAndAggregateUsageStats(now - windowMs, now)
+        // Access can be revoked between the check and the query, and the platform may return null.
+        val stats = runCatching { usm.queryAndAggregateUsageStats(now - windowMs, now) }.getOrNull() ?: return emptyList()
         val pm = ctx.packageManager
         val rows = stats.values
             .filter { it.totalTimeInForeground > 0 && it.packageName != ctx.packageName }

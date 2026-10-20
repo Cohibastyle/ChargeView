@@ -511,8 +511,9 @@ private fun TopAppsPanel(samples: List<Sample>) {
                 Text("No app usage recorded in this period.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
                 apps.forEach { a ->
+                    val share = "%.0f".format(a.share * 100)
                     val est = if (drained >= 1) " · ~%.0f %% battery".format(a.share * drained) else ""
-                    DiagRow(a.label, "${fmtDuration(a.foregroundMs / 60000f)} · %.0f %%$est".format(a.share * 100))
+                    DiagRow(a.label, "${fmtDuration(a.foregroundMs / 60000f)} · $share %$est")
                 }
             }
         }
