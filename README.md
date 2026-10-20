@@ -1,6 +1,7 @@
 # ChargeView
 
 [![Build Debug APK](https://github.com/Cohibastyle/ChargeView/actions/workflows/android-debug-apk.yml/badge.svg)](https://github.com/Cohibastyle/ChargeView/actions/workflows/android-debug-apk.yml)
+[![Download APK](https://img.shields.io/badge/download-APK-brightgreen)](https://github.com/Cohibastyle/ChargeView/releases/latest)
 
 A native Android battery monitor built with Kotlin and Jetpack Compose. ChargeView shows what your
 battery is actually doing — live power, current, temperature, voltage and charge rate — and turns it
@@ -8,10 +9,15 @@ into plain-language estimates of how long until you're full or empty.
 
 Everything is measured and stored on the device. No accounts, no network, no analytics.
 
+## Download
+
+Grab the latest debug APK from the [**latest release**](https://github.com/Cohibastyle/ChargeView/releases/latest)
+and sideload it on an Android 8.0+ device. The release is rebuilt and replaced on every push to `main`.
+
 ## Screenshots
 
-> These are the design mockups from [ChargeView-mockups.html](ChargeView-mockups.html), rendered to
-> PNG. They show the intended look and layout with sample readings.
+> These are rendered from the app's design mockups. They show the intended look and layout with
+> sample readings.
 
 | Dashboard (charging) | Dashboard (discharging) | Session detail |
 | --- | --- | --- |
@@ -76,8 +82,9 @@ gradle wrapper --gradle-version 8.10.2
 
 The APK lands at `app/build/outputs/apk/debug/app-debug.apk`. The GitHub Actions workflow in
 [`.github/workflows/android-debug-apk.yml`](.github/workflows/android-debug-apk.yml) builds the same
-APK on every push to `main` / `master` and on pull requests, and uploads it as the
-`chargeview-debug-apk` artifact.
+APK on every push to `main` / `master` and on pull requests, uploads it as the
+`chargeview-debug-apk` artifact, and on pushes to `main` / `master` also publishes it to the
+[`latest` release](https://github.com/Cohibastyle/ChargeView/releases/latest).
 
 ## Project layout
 
@@ -99,4 +106,3 @@ recent 20,000 samples) and are never uploaded. Clearing history in Settings dele
 ## Documentation
 
 - [FSD.md](FSD.md) — functional specification.
-- [ChargeView-mockups.html](ChargeView-mockups.html) — screen mockups (open in a browser).

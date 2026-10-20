@@ -33,3 +33,46 @@ jobs:
         with:
           name: chargeview-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+
+  publish-release:
+    needs: build-debug-apk
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read version name
+        id: version
+        run: |
+          VERSION=$(grep -oE 'versionName[[:space:]]*=[[:space:]]*"[^"]+"' app/build.gradle.kts | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+          echo "name=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Download APK
+        uses: actions/download-artifact@v4
+        with:
+          name: chargeview-debug-apk
+          path: dist
+
+      - name: Rename APK
+        run: mv dist/app-debug.apk "dist/ChargeView-${{ steps.version.outputs.name }}-debug.apk"
+
+      - name: Delete previous rolling release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release delete latest --cleanup-tag --yes || true
+
+      - name: Publish rolling release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: ChargeView ${{ steps.version.outputs.name }} (debug)
+          body: |
+            Latest debug build from `${{ github.sha }}`.
+
+            Download the APK below and sideload it on an Android 8.0+ device.
+            This is a debug build, signed with the standard debug key.
+          files: dist/*.apk
+          make_latest: true
