@@ -133,6 +133,7 @@ fun ChargeViewApp(vm: BatteryViewModel) {
     val recording by vm.recording.collectAsState()
     var tab by rememberSaveable { mutableIntStateOf(0) }
     var showCards by rememberSaveable { mutableStateOf(false) }
+    var showHelp by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -159,7 +160,8 @@ fun ChargeViewApp(vm: BatteryViewModel) {
                 1 -> HistoryScreen(samples)
                 2 -> DiagnosticsScreen(vm, samples, target, recording)
                 else -> if (showCards) CardsSettingsScreen(vm, samples) { showCards = false }
-                else SettingsScreen(vm, theme, target, recording) { showCards = true }
+                else if (showHelp) HelpScreen { showHelp = false }
+                else SettingsScreen(vm, theme, target, recording, { showCards = true }, { showHelp = true })
             }
         }
     }
@@ -522,6 +524,100 @@ private fun TopAppsPanel(samples: List<Sample>) {
     )
 }
 
+private val HELP: List<Pair<String, List<Pair<String, String>>>> = listOf(
+    "Getting started" to listOf(
+        "What it does" to "ChargeView watches your battery while it is on screen and shows what is happening: how fast it is charging or draining, how long that will take, and how the numbers have moved over the last hour.",
+        "Who it is for" to "It is built for slow charging. When the battery nears full the charge rate drops, and ChargeView accounts for that taper instead of assuming the current rate continues.",
+        "Living with it" to "Open it while charging or when you want to check drain. It reads the battery every few seconds and, if recording is on, saves the readings on your phone.",
+    ),
+    "Home screen" to listOf(
+        "Top card" to "The first card is large and holds more detail than the others. Hold it and drag to move it, like any other card.",
+        "Small cards" to "Each small card shows a value, a note, and a sparkline of the last 10 minutes so you can see at a glance whether it is rising or falling.",
+        "Graph card" to "Tap any card to plot that measurement in the graph at the bottom. Tap the same card again to clear it.",
+        "Scrolling" to "Home scrolls. The large card stays pinned at the top while the other cards and the graph move underneath.",
+        "Rearranging" to "Hold a card and drag it to a new position. The first position is always the large card.",
+        "Changing cards" to "Settings then Home screen cards turns cards on and off and shows what each one will display. Up to 8 cards can be shown.",
+    ),
+    "Reading the numbers" to listOf(
+        "Charge and drain" to "Above 80% the charge rate slows down as the battery fills. ChargeView applies that taper, so the time estimate reflects the slower finish rather than the fast start.",
+        "Time to target" to "How long until the charge target you chose is reached. While discharging the same card shows the time until empty instead.",
+        "Time to empty" to "While charging, the Time card can also show how long the battery would last at the current rate of use.",
+        "Confidence" to "The battery only reports whole percent steps. Early on, ChargeView has too few steps to be sure, and says so. The estimate settles after a few minutes.",
+        "Estimates" to "Time and rate figures are estimates from recent readings, not promises. Heavy use, a dimmed screen or a paused charge will change them.",
+    ),
+    "Cards" to listOf(
+        "Battery charge" to "Level as a percentage, the charging state, and the time to your target.",
+        "Battery power" to "Power in watts. Positive means charging, negative means discharging. Extras show the 10 minute average and 30 minute peak for charging and for discharging separately.",
+        "Time" to "Time to the charge target, or to empty while discharging. The large card adds the time of day the target is reached and how long the current state has lasted.",
+        "SoC change" to "How much the level has moved since the last plug or unplug event, growing minute by minute up to 10 minutes.",
+        "Rate" to "Percent per hour, from 1 minute up to a 30 minute peak. Positive while charging.",
+        "Next 1%" to "How long the next whole percent step should take, with the recent step times.",
+        "Temperature" to "Battery temperature in Celsius, with the 30 minute low, average and high.",
+        "Battery voltage" to "Battery terminal voltage, with the 30 minute low, average and high.",
+        "mAh" to "The current in milliamps and the total capacity the estimates use. The extras show how much sits in the battery and the rate in percent per hour.",
+        "Charge moved" to "Milliamp-hours moved in the last minute, 5 minutes, 10 minutes and this event, with the share of total capacity.",
+        "Energy" to "Watt-hours moved in the last minute, 5 minutes, 10 minutes and this event, with the average power of the event.",
+    ),
+    "History and recording" to listOf(
+        "Record history" to "Settings has a Record history switch. When it is on, readings are saved on this phone while the app is running. Nothing is sent anywhere.",
+        "History tab" to "Recorded sessions, newest first, and a graph of the battery level. Tap a session to see its details.",
+        "Clear history" to "Settings has Clear recorded history, which deletes everything recorded so far.",
+        "Not recorded" to "Readings taken while the app is closed are not saved. Recording only runs while ChargeView is open.",
+    ),
+    "Graphs" to listOf(
+        "Touch to inspect" to "Drag a finger along the graph to read the value at that point. Release to go back to the live view.",
+        "Time axis" to "The chip on the graph switches between log time and linear time. Log time stretches the recent seconds and squeezes older readings so a full hour fits, and the vertical lines mark each interval.",
+        "Charging and discharging" to "Charging is drawn as a dashed line, discharging as a solid one.",
+        "Y axis" to "Every graph is labelled on the left, and each card's graph keeps its own scale.",
+    ),
+    "Settings" to listOf(
+        "Theme" to "Light, Dark, or Follow system.",
+        "Charge target" to "The level the time estimates aim for. Sliding it to 80% is a good way to slow battery ageing.",
+        "Update interval" to "How often the battery is read, from 0.1s to 60s. The default is 5s, which is easy on the battery. For faster intervals than 1s the numbers glide between readings rather than jumping.",
+        "Battery capacity" to "Used to turn current into percent, and percent into time. It is read from Android where possible, otherwise 4000 mAh is assumed. Adjust it with the -100 and +100 buttons to match your phone's real capacity.",
+        "Diagnostics" to "Raw readings, plus a system load estimate and the apps you have used most. Android does not give apps real per-app battery statistics, so that list is an estimate from screen time and needs usage access.",
+    ),
+    "The phone" to listOf(
+        "Folding" to "On a foldable, ChargeView adapts when the phone is opened or closed, without restarting and without losing readings.",
+        "Trouble reading the battery" to "Some phones report a voltage that never changes, or no capacity at all. The app falls back to sane defaults and says which source it used in Diagnostics.",
+        "Not sure where to start" to "Leave everything at its defaults for a day of normal use, then look at the graph to see when the battery drains fastest.",
+    ),
+)
+
+@Composable
+private fun HelpScreen(back: () -> Unit) {
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp)) {
+        Row(
+            Modifier.padding(top = 6.dp).clickable(onClick = back).padding(vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("\u2039 ", color = chargeGreen(), fontSize = 20.sp)
+            Text("How to use ChargeView", fontWeight = FontWeight.Bold, fontSize = 17.sp)
+        }
+        HELP.forEach { (section, rows) ->
+            Text(
+                section, fontWeight = FontWeight.Bold, fontSize = 15.sp,
+                modifier = Modifier.padding(top = 14.dp, bottom = 6.dp),
+            )
+            Panel(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    rows.forEach { (title, body) ->
+                        Column {
+                            Text(title, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                            Text(body, fontSize = 13.sp, lineHeight = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
+        }
+        Text(
+            "ChargeView 0.11 \u00b7 Developer Yen@yenchoi.com",
+            fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(vertical = 16.dp),
+        )
+    }
+}
+
 @Composable
 private fun DiagRow(label: String, value: String?) {
     Row(Modifier.fillMaxWidth()) {
@@ -531,7 +627,14 @@ private fun DiagRow(label: String, value: String?) {
 }
 
 @Composable
-private fun SettingsScreen(vm: BatteryViewModel, theme: String, target: Int, recording: Boolean, openCards: () -> Unit) {
+private fun SettingsScreen(
+    vm: BatteryViewModel,
+    theme: String,
+    target: Int,
+    recording: Boolean,
+    openCards: () -> Unit,
+    openHelp: () -> Unit,
+) {
     val cards by vm.cards.collectAsState()
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text("Settings", fontWeight = FontWeight.Bold, fontSize = 17.sp, modifier = Modifier.padding(top = 6.dp))
@@ -545,6 +648,18 @@ private fun SettingsScreen(vm: BatteryViewModel, theme: String, target: Int, rec
                     )
                 }
                 Text("›", fontSize = 22.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        Panel(Modifier.fillMaxWidth().clickable(onClick = openHelp)) {
+            Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text("How to use ChargeView", fontWeight = FontWeight.SemiBold)
+                    Text(
+                        "What each card shows and how to read the numbers",
+                        fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Text("\u203a", fontSize = 22.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         Panel(Modifier.fillMaxWidth()) {
