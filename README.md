@@ -16,8 +16,7 @@ and sideload it on an Android 8.0+ device. The release is rebuilt and replaced o
 
 ## Screenshots
 
-> These are rendered from the app's design mockups. They show the intended look and layout with
-> sample readings.
+> These show the intended look and layout with sample readings.
 
 | Dashboard (charging) | Dashboard (discharging) | Session detail |
 | --- | --- | --- |
@@ -33,16 +32,17 @@ and sideload it on an Android 8.0+ device. The release is rebuilt and replaced o
 - Battery percentage, charging / discharging / idle state, and a taper-aware estimate of time to your
   charge target or time until empty.
 - Signed battery power (W), current (mA), temperature (°C), voltage (V) and charge moved (mAh).
-- SoC change since the last plug / unplug event, growing minute by minute up to a rolling 10 minutes.
+- SoC drift since the last plug / unplug event, measured from whole-percent steps over 1, 5 and 10
+  minutes, plus the %/h that drift implies.
 - Large graph card with a labelled Y axis, touch inspection of individual samples, and a log-time axis
-  with vertical interval lines (switchable to linear). Lines that cross zero change colour at the
-  crossing: above zero is green, below zero is amber.
+  with vertical interval lines (switchable to linear, where grid lines are labelled with clock times).
+  Lines that cross zero change colour at the crossing: above zero is green, below zero is amber.
 - Home scrolls, with the large top card pinned while the other cards and the graph move underneath.
 
 ### Configurable home cards
-- Settings › Home screen cards toggles each card on or off: battery charge, power, SoC change,
-  temperature, voltage, mAh rate & total, time, charge moved, next 1%, rate (%/hour) and energy (Wh),
-  up to 8 at a time.
+- Settings › Home screen cards toggles each card on or off: battery charge, power, SoC drift,
+  temperature, voltage, mAh rate & total, mAh/min moved, time, charge moved, next 1%, rate (%/hour)
+  and energy (Wh), up to 8 at a time.
 - Hold and drag a card on Home to reorder. The first card renders large with extra detail.
 - Tapping a card plots that parameter in the large graph card.
 - Every small card carries a last-10-minute trend line.
@@ -62,8 +62,8 @@ and sideload it on an Android 8.0+ device. The release is rebuilt and replaced o
 
 ### Settings
 - Light / Dark / Follow system theme.
-- Charge target, update interval (0.1s to 60s), battery capacity override (automatic or manual),
-  recording on/off, clear history, and a How to use ChargeView manual.
+- Charge target, update interval (0.1s to 60s, default 0.5s), battery capacity override (automatic or
+  manual), recording on/off, clear history, and a How to use ChargeView manual.
 
 ### Responsive
 - Adapts in place to the Galaxy Fold7 cover and unfolded screens, and to rotation, without a restart.
