@@ -134,6 +134,7 @@ fun cardInfo(id: CardId, samples: List<Sample>, target: Int): CardInfo {
                 "1 min" to pct(Estimator.changeOver(run, 1)),
                 "5 min" to pct(perFive),
                 "10 min" to pct(perTen),
+                "Equivalent" to (Estimator.rate(run)?.first?.let { signed(it * 60f, 1) + " %/h" } ?: none),
             ),
         )
         CardId.TEMP -> {
@@ -202,6 +203,31 @@ fun cardInfo(id: CardId, samples: List<Sample>, target: Int): CardInfo {
                 ),
             )
         }
+        CardId.MAHMIN -> {
+            val ma = { s: Sample -> s.currentMa }
+            val cap = last?.let { Estimator.capacityOf(it) } ?: 4000f
+            // Average amps over a trailing window, which is the charge slope in mAh/min.
+            fun slope(span: Long): Float? {
+                val l = last ?: return null
+                val m = win.filter { it.t >= l.t - span }
+                if (m.size < 2) return null
+                return m.map(ma).average().toFloat() / 60f
+            }
+            val v = slope(60_000L)
+            val rate = v?.let { it * 60f / cap * 100f }
+            val peakSeries = seriesFor(CardId.MAHMIN, samples).pts.map { it.y }
+            val peak = if (last?.dir == -1) peakSeries.minOrNull() else peakSeries.maxOrNull()
+            CardInfo(
+                id.title, "⇄", c(v),
+                v?.let { signed(it, 1) } ?: none, "mAh/min", "Last 60 seconds",
+                listOf(
+                    "5 min" to (slope(5 * 60_000L)?.let { signed(it, 1) + " mAh/min" } ?: none),
+                    "10 min" to (slope(10 * 60_000L)?.let { signed(it, 1) + " mAh/min" } ?: none),
+                    "Equivalent" to (rate?.let { signed(it, 0) + " %/h" } ?: none),
+                    "Peak (30 min)" to (peak?.let { signed(it, 1) + " mAh/min" } ?: none),
+                ),
+            )
+        }
         CardId.NEXT -> {
             val steps = Estimator.stepTimes(run)
             val since = last?.let { (it.t - (steps.lastOrNull() ?: run.first().t)) / 1000f }
@@ -235,11 +261,12 @@ fun cardInfo(id: CardId, samples: List<Sample>, target: Int): CardInfo {
             CardInfo(
                 id.title, "↗", c(v),
                 v?.let { signed(it, 1) } ?: none, "%/h",
-                if (r == null) "Measuring rate…" else if (r.second) "From SoC steps" else "From smoothed current",
+                if (r == null) "Measuring rate…" else if (r.second) "Now, from SoC steps" else "Now, from smoothed current",
                 listOf(
-                    "1 min" to (perHour(60_000L)?.let { signed(it, 1) + " %/h" } ?: none),
-                    "5 min" to (perHour(5 * 60_000L)?.let { signed(it, 1) + " %/h" } ?: none),
-                    "10 min" to (perHour(10 * 60_000L)?.let { signed(it, 1) + " %/h" } ?: none),
+                    "Now" to (v?.let { signed(it, 1) + " %/h" } ?: none),
+                    "1 min avg" to (perHour(60_000L)?.let { signed(it, 1) + " %/h" } ?: none),
+                    "5 min avg" to (perHour(5 * 60_000L)?.let { signed(it, 1) + " %/h" } ?: none),
+                    "10 min avg" to (perHour(10 * 60_000L)?.let { signed(it, 1) + " %/h" } ?: none),
                     "Peak (30 min)" to (peak?.let { signed(it, 1) + " %/h" } ?: none),
                 ),
             )
@@ -261,15 +288,16 @@ fun cardInfo(id: CardId, samples: List<Sample>, target: Int): CardInfo {
             )
         }
         CardId.MAH -> {
-            val cap = last?.capacityMah?.takeIf(::validCapacity)
+            val s = last
+            val cap = s?.capacityMah?.takeIf(::validCapacity)
             CardInfo(
                 id.title, "▤", dc,
-                last?.let { signed(it.currentMa, 0) } ?: none, "mA",
+                s?.let { signed(it.currentMa, 0) } ?: none, "mA",
                 if (cap != null) "of ~%.0f mAh total".format(cap) else "Total not available",
                 listOf(
                     "Total" to (cap?.let { "~%.0f mAh".format(it) } ?: none),
-                    "In battery" to (cap?.let { c0 -> last.let { "~%.0f mAh".format(c0 * it.level / 100f) } } ?: none),
-                    "Rate" to (if (cap != null && last != null) signed(last.currentMa / cap * 100f, 1) + " %/h" else none),
+                    "In battery" to (if (s == null || cap == null) none else "~%.0f mAh".format(cap * s.level / 100f)),
+                    "Rate" to (if (s == null || cap == null) none else signed(s.currentMa / cap * 100f, 1) + " %/h"),
                 ),
             )
         }
@@ -321,6 +349,7 @@ fun seriesFor(id: CardId, samples: List<Sample>, windowMs: Long = WINDOW_MS): Se
         CardId.SOC -> Series(socSeries(Estimator.run(samples), min, null), "%", true, null, true)
             CardId.VOLTAGE -> Series(win.filter { it.voltageV > 0f }.map { Pt(it.t, it.voltageV, it.dir) }, "V", false, null)
         CardId.MAH -> Series(win.map { Pt(it.t, if (it.dir < 0) -abs(it.currentMa) else abs(it.currentMa), it.dir) }, "mA", true, null)
+        CardId.MAHMIN -> Series(win.map { Pt(it.t, it.currentMa / 60f, it.dir) }, "mAh/min", true, null)
         CardId.TIME -> Series(win.map { Pt(it.t, it.level, it.dir) }, "%", false, 0f..100f, true)
         CardId.CHARGE_MAH -> Series(rolling(win) { it.currentMa }, "mAh", true, null)
         CardId.ENERGY -> Series(rolling(win) { it.powerW }, "Wh", true, null)
@@ -348,6 +377,8 @@ private fun Sparkline(pts: List<Pt>, endT: Long, modifier: Modifier) {
     val a = dischargeAmber()
     val base = MaterialTheme.colorScheme.outlineVariant
     Canvas(modifier) {
+        // Half the large graph's stroke.
+        val sparkStroke = 1.dp.toPx()
         val t0 = endT - 10 * 60_000L
         val pad = 3.dp.toPx()
         val w = size.width - 2 * pad
@@ -362,14 +393,35 @@ private fun Sparkline(pts: List<Pt>, endT: Long, modifier: Modifier) {
         fun x(t: Long) = pad + (t - t0).toFloat() / (endT - t0) * w
         fun y(v: Float) = pad + (1f - (v - lo) / (hi - lo)) * h
         for (i in 0 until pts.size - 1) {
-            drawLine(
-                if (pts[i + 1].dir < 0) a else g,
-                Offset(x(pts[i].t), y(pts[i].y)), Offset(x(pts[i + 1].t), y(pts[i + 1].y)),
-                strokeWidth = 2.dp.toPx(), cap = StrokeCap.Round,
-            )
+            // Value-based colouring, matching the large graph: the sign decides the colour, and
+            // sign changes are split at the zero crossing.
+            val a0 = pts[i]
+            val b0 = pts[i + 1]
+            val na = a0.y < 0f
+            val nb = b0.y < 0f
+            if (na == nb) {
+                drawLine(
+                    if (na) a else g,
+                    Offset(x(a0.t), y(a0.y)), Offset(x(b0.t), y(b0.y)),
+                    strokeWidth = sparkStroke, cap = StrokeCap.Round,
+                )
+            } else {
+                val f = (a0.y / (a0.y - b0.y)).coerceIn(0f, 1f)
+                val mx = x(a0.t) + (x(b0.t) - x(a0.t)) * f
+                drawLine(
+                    if (na) a else g,
+                    Offset(x(a0.t), y(a0.y)), Offset(mx, y(0f)),
+                    strokeWidth = sparkStroke, cap = StrokeCap.Round,
+                )
+                drawLine(
+                    if (nb) a else g,
+                    Offset(mx, y(0f)), Offset(x(b0.t), y(b0.y)),
+                    strokeWidth = sparkStroke, cap = StrokeCap.Round,
+                )
+            }
         }
         val p = pts.last()
-        drawCircle(if (p.dir < 0) a else g, 2.5.dp.toPx(), Offset(x(p.t), y(p.y)))
+        drawCircle(if (p.y < 0f) a else g, 2.5.dp.toPx(), Offset(x(p.t), y(p.y)))
     }
 }
 
@@ -640,7 +692,7 @@ fun HomeScreen(vm: BatteryViewModel, samples: List<Sample>, target: Int, recordi
                         CardGrid(cards, samples, target, selected, onSelect, vm::moveCard, Modifier.fillMaxWidth().height(gridH), display, scroll)
                     }
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        ChartCard(selected, samples, Modifier.weight(1f))
+                        ChartCard(selected, samples, target, Modifier.weight(1f))
                         RecordingCard(samples, recording)
                     }
                 }
@@ -650,7 +702,7 @@ fun HomeScreen(vm: BatteryViewModel, samples: List<Sample>, target: Int, recordi
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     CardGrid(cards, samples, target, selected, onSelect, vm::moveCard, Modifier.fillMaxWidth().height(gridH), display, scroll)
-                    ChartCard(selected, samples, Modifier.fillMaxWidth().height(320.dp))
+                    ChartCard(selected, samples, target, Modifier.fillMaxWidth().height(320.dp))
                     RecordingCard(samples, recording)
                 }
             }
@@ -660,7 +712,7 @@ fun HomeScreen(vm: BatteryViewModel, samples: List<Sample>, target: Int, recordi
 }
 
 @Composable
-private fun ChartCard(id: CardId, samples: List<Sample>, modifier: Modifier) {
+private fun ChartCard(id: CardId, samples: List<Sample>, target: Int, modifier: Modifier) {
     val series = remember(id, samples) { seriesFor(id, samples) }
     var logTime by rememberSaveable { mutableStateOf(true) }
     Panel(modifier) {
@@ -669,6 +721,25 @@ private fun ChartCard(id: CardId, samples: List<Sample>, modifier: Modifier) {
                 Text(id.title, fontWeight = FontWeight.Bold, fontSize = 17.sp, maxLines = 1)
                 Spacer(Modifier.weight(1f))
                 RangeChip(if (logTime) "Log time" else "Linear time", true) { logTime = !logTime }
+            }
+            if (id == CardId.TIME || id == CardId.LEVEL) {
+                val eta = glidedEta(samples, target)
+                val last = samples.lastOrNull()
+                val charging = last?.dir == 1
+                val note = when {
+                    eta.minutes == null || eta.minutes <= 0f -> eta.label
+                    charging -> "~${fmtDuration(eta.minutes)} until $target% · reaches ${
+                        java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
+                            .format(java.util.Date((last?.t ?: 0L) + (eta.minutes * 60_000f).toLong()))
+                    }"
+                    else -> "~${fmtDuration(eta.minutes)} until empty"
+                }
+                if (note.isNotBlank()) {
+                    Text(
+                        note, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1, modifier = Modifier.padding(top = 2.dp),
+                    )
+                }
             }
             LineChart(
                 series.pts, series.unit,
@@ -679,8 +750,17 @@ private fun ChartCard(id: CardId, samples: List<Sample>, modifier: Modifier) {
                 modifier = Modifier.weight(1f).fillMaxWidth(),
             )
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                LegendDot(chargeGreen(), "Charging (+)")
-                LegendDot(dischargeAmber(), "Discharging (−)")
+                // On the graphs that cross zero the colour follows the sign of the value, so the
+                // legend has to describe that rather than charging and discharging state.
+                val byValue = series.zeroLine && series.fixed == null &&
+                    series.pts.any { it.y < 0f } && series.pts.any { it.y > 0f }
+                if (byValue) {
+                    LegendDot(chargeGreen(), "Above 0 (+)")
+                    LegendDot(dischargeAmber(), "Below 0 (−)")
+                } else {
+                    LegendDot(chargeGreen(), "Charging (+)")
+                    LegendDot(dischargeAmber(), "Discharging (−)")
+                }
             }
         }
     }
@@ -689,28 +769,30 @@ private fun ChartCard(id: CardId, samples: List<Sample>, modifier: Modifier) {
 private fun smallDesc(id: CardId) = when (id) {
     CardId.LEVEL -> "Charge % and time to target / empty"
     CardId.POWER -> "Watts in / out (+ charge, − discharge)"
-    CardId.SOC -> "% change since plug / unplug (1–10 min)"
+    CardId.SOC -> "% moved since plug / unplug (1–10 min)"
     CardId.TEMP -> "Battery temperature in °C"
     CardId.VOLTAGE -> "Battery voltage in V"
     CardId.MAH -> "Current in mA, plus total capacity in mAh"
+    CardId.MAHMIN -> "Charge slope in mAh per minute"
     CardId.TIME -> "Time to charge target, or to empty when discharging"
     CardId.CHARGE_MAH -> "mAh moved in or out over the last minute"
     CardId.NEXT -> "Countdown to the next 1% step"
-    CardId.RATE -> "Smoothed speed in % per hour"
+    CardId.RATE -> "Instant speed in % per hour"
     CardId.ENERGY -> "Watt-hours moved over the last minute"
 }
 
 private fun largeDesc(id: CardId) = when (id) {
     CardId.LEVEL -> "adds progress bar, target, ETA, confidence"
     CardId.POWER -> "adds charge and discharge average and peak"
-    CardId.SOC -> "adds 1 / 5 / 10 min change"
+    CardId.SOC -> "adds 1 / 5 / 10 min movement and the implied %/h"
     CardId.TEMP -> "adds 30 min min / avg / max"
     CardId.VOLTAGE -> "adds 30 min min / avg / max"
     CardId.MAH -> "adds total, in battery, % per hour"
+    CardId.MAHMIN -> "adds 5 / 10 min average, implied %/h and 30 min peak"
     CardId.TIME -> "adds to target / empty / 100%, time since plug or unplug, finish clock time"
     CardId.CHARGE_MAH -> "adds 5 / 10 min, this event, % of capacity"
     CardId.NEXT -> "adds time since last step, expected per 1%, recent steps"
-    CardId.RATE -> "adds 1 / 5 / 10 min rates and 30 min peak"
+    CardId.RATE -> "adds now, 1 / 5 / 10 min averages and 30 min peak"
     CardId.ENERGY -> "adds 5 / 10 min, this event, average power"
 }
 

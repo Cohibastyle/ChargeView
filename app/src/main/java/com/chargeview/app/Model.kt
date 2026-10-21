@@ -31,10 +31,11 @@ data class Sample(
 enum class CardId(val key: String, val title: String) {
     LEVEL("level", "Battery charge"),
     POWER("power", "Battery power"),
-    SOC("soc", "SoC change"),
+    SOC("soc", "SoC drift (rate)"),
     TEMP("temp", "Temperature"),
     VOLTAGE("voltage", "Battery voltage"),
     MAH("mah", "mAh (rate & total)"),
+    MAHMIN("mahmin", "mAh/min moved"),
     TIME("time", "Time"),
     CHARGE_MAH("chargemah", "Charge moved (mAh)"),
     NEXT("next", "Next 1%"),

@@ -35,7 +35,8 @@ and sideload it on an Android 8.0+ device. The release is rebuilt and replaced o
 - Signed battery power (W), current (mA), temperature (°C), voltage (V) and charge moved (mAh).
 - SoC change since the last plug / unplug event, growing minute by minute up to a rolling 10 minutes.
 - Large graph card with a labelled Y axis, touch inspection of individual samples, and a log-time axis
-  with vertical interval lines (switchable to linear).
+  with vertical interval lines (switchable to linear). Lines that cross zero change colour at the
+  crossing: above zero is green, below zero is amber.
 - Home scrolls, with the large top card pinned while the other cards and the graph move underneath.
 
 ### Configurable home cards

@@ -505,7 +505,7 @@ Folding, unfolding, resizing, or rotating shall not:
 
 ### 12.1 Sampling
 
-Default sampling interval: one second.
+Default sampling interval: 0.5 seconds.
 
 Selectable intervals:
 

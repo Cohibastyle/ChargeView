@@ -550,12 +550,13 @@ private val HELP: List<Pair<String, List<Pair<String, String>>>> = listOf(
         "Battery charge" to "Level as a percentage, the charging state, and the time to your target.",
         "Battery power" to "Power in watts. Positive means charging, negative means discharging. Extras show the 10 minute average and 30 minute peak for charging and for discharging separately.",
         "Time" to "Time to the charge target, or to empty while discharging. The large card adds the time of day the target is reached and how long the current state has lasted.",
-        "SoC change" to "How much the level has moved since the last plug or unplug event, growing minute by minute up to 10 minutes.",
-        "Rate" to "Percent per hour, from 1 minute up to a 30 minute peak. Positive while charging.",
+        "SoC drift" to "How far the level has drifted since the last plug or unplug event, measured from whole percent steps over 1, 5 and 10 minutes, plus the %/h that drift implies.",
+        "Rate" to "The same speed measured the other way: the instantaneous %/h right now, and 1, 5 and 10 minute averages. SoC drift is how much it actually moved over a period; Rate is how fast it is moving at this moment.",
         "Next 1%" to "How long the next whole percent step should take, with the recent step times.",
         "Temperature" to "Battery temperature in Celsius, with the 30 minute low, average and high.",
         "Battery voltage" to "Battery terminal voltage, with the 30 minute low, average and high.",
         "mAh" to "The current in milliamps and the total capacity the estimates use. The extras show how much sits in the battery and the rate in percent per hour.",
+        "mAh/min moved" to "The charge slope in milliamp-hours per minute over 1, 5 and 10 minutes, the %/h it implies, and the 30 minute peak. This is mAh and Rate combined: it is the same speed stated in charge rather than percent.",
         "Charge moved" to "Milliamp-hours moved in the last minute, 5 minutes, 10 minutes and this event, with the share of total capacity.",
         "Energy" to "Watt-hours moved in the last minute, 5 minutes, 10 minutes and this event, with the average power of the event.",
     ),
@@ -567,14 +568,14 @@ private val HELP: List<Pair<String, List<Pair<String, String>>>> = listOf(
     ),
     "Graphs" to listOf(
         "Touch to inspect" to "Drag a finger along the graph to read the value at that point. Release to go back to the live view.",
-        "Time axis" to "The chip on the graph switches between log time and linear time. Log time stretches the recent seconds and squeezes older readings so a full hour fits, and the vertical lines mark each interval.",
-        "Charging and discharging" to "Charging is drawn as a dashed line, discharging as a solid one.",
+        "Time axis" to "The chip on the graph switches between log time and linear time. Log time stretches the recent seconds and squeezes older readings so a full hour fits, and labels the reading positions as −30s, −1m, −2m and so on. Linear time spaces readings evenly and labels each grid line with its clock time, every minute while the window is short and every 5, 15 or 30 minutes over the 1 h, 6 h and All ranges.",
+        "Charging and discharging" to "Charging is drawn in green, discharging in amber, and the legend under each graph repeats the colour key.",
         "Y axis" to "Every graph is labelled on the left, and each card's graph keeps its own scale.",
     ),
     "Settings" to listOf(
         "Theme" to "Light, Dark, or Follow system.",
         "Charge target" to "The level the time estimates aim for. Sliding it to 80% is a good way to slow battery ageing.",
-        "Update interval" to "How often the battery is read, from 0.1s to 60s. The default is 5s, which is easy on the battery. For faster intervals than 1s the numbers glide between readings rather than jumping.",
+        "Update interval" to "How often the battery is read, from 0.1s to 60s. The default is 0.5s. Android only delivers a fresh battery reading about once a second, so intervals below 1s repeat the last reading while the numbers glide smoothly between them.",
         "Battery capacity" to "Used to turn current into percent, and percent into time. It is read from Android where possible, otherwise 4000 mAh is assumed. Adjust it with the -100 and +100 buttons to match your phone's real capacity.",
         "Diagnostics" to "Raw readings, plus a system load estimate and the apps you have used most. Android does not give apps real per-app battery statistics, so that list is an estimate from screen time and needs usage access.",
     ),
@@ -700,10 +701,10 @@ private fun SettingsScreen(
                 }
                 Text(
                     when {
-                        ms < 1000 -> "Readings are taken every 1s; numbers glide between them every ${label(ms)}. Display runs 1s behind."
+                        ms < 1000 -> "Readings are taken every 0.5s; numbers glide between them every ${label(ms)}. Display runs 0.5s behind."
                         ms == 1000 -> "Readings every 1s. High battery use, and history grows faster."
-                        ms == 2000 -> "Readings every 2s, numbers glide every 1s. Display runs 2s behind."
-                        else -> "Readings every ${label(ms)}, numbers glide every 1s. Default is 5s."
+                        ms == 2000 -> "Readings every 2s, numbers glide every 0.5s. Display runs 2s behind."
+                        else -> "Readings every ${label(ms)}, numbers glide every 0.5s."
                     },
                     fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

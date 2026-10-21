@@ -71,7 +71,7 @@ class BatteryViewModel(app: Application) : AndroidViewModel(app) {
                     _samples.value = (_samples.value + s).takeLast(MAX_SAMPLES)
                     if (_recording.value) withContext(Dispatchers.IO) { file.appendText(s.toCsv() + "\n") }
                 }
-                delay(_updateMs.value.coerceAtLeast(1000).toLong())
+                delay(_updateMs.value.coerceAtLeast(500).toLong())
             }
         }
     }
@@ -155,7 +155,7 @@ class BatteryViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     companion object {
-        const val DEFAULT_UPDATE_MS = 5000
+        const val DEFAULT_UPDATE_MS = 500
         const val MAX_CARDS = 8
         const val MAX_SAMPLES = 20_000
         const val DEFAULT_MAH = 4000f

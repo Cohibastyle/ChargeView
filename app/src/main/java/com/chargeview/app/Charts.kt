@@ -63,6 +63,7 @@ fun LineChart(
     }
 
     val measurer = rememberTextMeasurer()
+    val shortClock = remember { DateFormat.getTimeInstance(DateFormat.SHORT) }
     val density = LocalDensity.current
     var sel by remember { mutableStateOf<Float?>(null) }
     var size by remember { mutableStateOf(IntSize.Zero) }
@@ -120,6 +121,41 @@ fun LineChart(
         else axisPx + (t - t0).toFloat() / span * plotW
     fun yOf(v: Float) = topPx + (1f - (v - yMin) / (yMax - yMin)) * plotH
 
+    // On graphs with a zero line the colour follows the sign of the value, so a line that crosses
+    // zero changes colour at the crossing instead of keeping the direction it entered with.
+    // Graphs without a zero line colour by charge direction.
+    val colorByValue = zeroLine && yMin < 0f && yMax > 0f
+
+    // Instants on the [stepMs] grid, walking back from "now", thinned so kept marks are at least
+    // [minGapPx] apart on screen. In log time the older end is compressed, so a fixed time step
+    // there would collapse into a solid band; the gap test drops those marks instead.
+    fun marks(stepMs: Long, minGapPx: Float): List<Long> {
+        if (stepMs <= 0L || span / stepMs > 4000L) return emptyList()
+        val out = ArrayList<Long>()
+        var prev = Float.MAX_VALUE
+        var s = t1 / stepMs * stepMs
+        while (s > t0) {
+            if (s > t0 && s < t1) {
+                val x = xOf(s)
+                if (prev - x >= minGapPx) {
+                    out += s
+                    prev = x
+                }
+            }
+            s -= stepMs
+        }
+        return out
+    }
+
+    // Labelled linear grid: every minute while the window allows, widening over 1 h / 6 h / All.
+    // A wide gap keeps the clock labels from touching each other.
+    val linearMarks = if (logTime) emptyList() else
+        marks(
+            listOf(60_000L, 5 * 60_000L, 15 * 60_000L, 30 * 60_000L)
+                .firstOrNull { marks(it, 52f).size >= 2 } ?: 60_000L,
+            52f,
+        )
+
     val selected: Pt? = sel?.let { x ->
         val frac = ((x - axisPx) / plotW).coerceIn(0f, 1f)
         val tm = if (logTime) t1 - ((exp((1f - frac) * logSpan) - 1f) * logK * 1000f).toLong()
@@ -172,45 +208,81 @@ fun LineChart(
                         val txt = measurer.measure(if (s < 60) "−${s}s" else "−${s / 60}m", style)
                         drawText(txt, topLeft = Offset(x - txt.size.width / 2f, size.height.toFloat() - txt.size.height))
                     }
+                } else {
+                    // Linear time: a labelled vertical line on every whole minute (widening to
+                    // 5 / 15 / 30 minutes over the 1 h, 6 h and All windows, where minute lines
+                    // would crowd together). Labels are skipped if they would overlap.
+                    var lastRight = -Float.MAX_VALUE
+                    linearMarks.asReversed().forEach { t ->
+                        val x = xOf(t)
+                        drawLine(labelColor, Offset(x, topPx), Offset(x, topPx + plotH), 1f)
+                        val txt = measurer.measure(shortClock.format(Date(t)), style)
+                        val left = x - txt.size.width / 2f
+                        if (left > lastRight + 6f && left >= axisPx) {
+                            drawText(txt, topLeft = Offset(left, size.height.toFloat() - txt.size.height))
+                            lastRight = left + txt.size.width
+                        }
+                    }
                 }
                 if (zeroLine && yMin < 0f && yMax > 0f) {
                     drawLine(zeroColor, Offset(axisPx, yOf(0f)), Offset(axisPx + plotW, yOf(0f)), 2f)
                 }
 
-                var i = 0
-                while (i < pts.size - 1) {
-                    val neg = pts[i].dir < 0
-                    val path = Path()
-                    path.moveTo(xOf(pts[i].t), yOf(pts[i].y))
-                    var j = i + 1
-                    while (j < pts.size && (pts[j].dir < 0) == neg) {
-                        path.lineTo(xOf(pts[j].t), yOf(pts[j].y))
-                        j++
+                fun isNeg(p: Pt) = if (colorByValue) p.y < 0f else p.dir < 0
+                // Split the series into same-coloured runs, cutting each run exactly where the
+                // colour changes. A single segment that spans the change contributes part of its
+                // length to each colour, so the line changes colour at the crossing itself.
+                val runs = ArrayList<Pair<Boolean, ArrayList<Offset>>>()
+                var neg = isNeg(pts[0])
+                var run = arrayListOf(Offset(xOf(pts[0].t), yOf(pts[0].y)))
+                for (k in 0 until pts.size - 1) {
+                    val a = pts[k]
+                    val b = pts[k + 1]
+                    val nb = isNeg(b)
+                    if (nb == neg) {
+                        run += Offset(xOf(b.t), yOf(b.y))
+                    } else {
+                        val f = if (colorByValue) (a.y / (a.y - b.y)).coerceIn(0f, 1f) else 1f
+                        val cut = Offset(
+                            xOf(a.t) + (xOf(b.t) - xOf(a.t)) * f,
+                            yOf(a.y + (b.y - a.y) * f),
+                        )
+                        run += cut
+                        runs += neg to run
+                        neg = nb
+                        run = arrayListOf(cut, Offset(xOf(b.t), yOf(b.y)))
                     }
-                    // Bridge to the next run so the line stays continuous.
-                    if (j < pts.size) path.lineTo(xOf(pts[j].t), yOf(pts[j].y))
-                    drawPath(
-                        path,
-                        if (neg) amber else green,
-                        style = Stroke(width = strokePx)
-                    )
-                    i = j
+                }
+                runs += neg to run
+                runs.forEach { (n, ps) ->
+                    // Skip single points and zero-length runs (a direction change at a single
+                    // sample cuts at the same place, leaving nothing to draw).
+                    if (ps.size < 2 || ps.all { it == ps[0] }) return@forEach
+                    val path = Path()
+                    path.moveTo(ps[0].x, ps[0].y)
+                    for (q in ps.drop(1)) path.lineTo(q.x, q.y)
+                    drawPath(path, if (n) amber else green, style = Stroke(width = strokePx))
                 }
 
                 selected?.let {
                     val x = xOf(it.t)
                     drawLine(labelColor, Offset(x, topPx), Offset(x, topPx + plotH), 2f)
                     drawCircle(Color.White, strokePx * 2.4f, Offset(x, yOf(it.y)))
-                    drawCircle(
-                        if (it.dir < 0) amber else green,
-                        strokePx * 1.8f, Offset(x, yOf(it.y))
-                    )
+                    drawCircle(if (isNeg(it)) amber else green, strokePx * 1.8f, Offset(x, yOf(it.y)))
                 }
 
                 val left = measurer.measure("−${(span / 60_000L).coerceAtLeast(1)}m", style)
-                val now = measurer.measure("Now", style)
-                if (!logTime) drawText(left, topLeft = Offset(axisPx, size.height.toFloat() - left.size.height))
-                drawText(now, topLeft = Offset(axisPx + plotW - now.size.width, size.height.toFloat() - now.size.height))
+                val nowLbl = measurer.measure("Now", style)
+                if (!logTime) {
+                    // The minute grid already labels the bottom edge, so only add endpoints when
+                    // it left those spots free.
+                    if (linearMarks.isEmpty()) {
+                        drawText(left, topLeft = Offset(axisPx, size.height.toFloat() - left.size.height))
+                        drawText(nowLbl, topLeft = Offset(axisPx + plotW - nowLbl.size.width, size.height.toFloat() - nowLbl.size.height))
+                    }
+                } else {
+                    drawText(nowLbl, topLeft = Offset(axisPx + plotW - nowLbl.size.width, size.height.toFloat() - nowLbl.size.height))
+                }
             }
         }
     }
